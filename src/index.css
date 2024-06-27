@@ -18,6 +18,10 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html{
+    background-image: url("./assets/bg.png");
+}
+
 a {
   font-weight: 500;
   color: #646cff;

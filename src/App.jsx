@@ -14,7 +14,7 @@ function App() {
         I am Niraj - Product Designer who Codes
       </h2>
       <div className="flex justify-around mx-auto w-fit mt-4">
-        <a href="https://github.com/someonepun">
+        <a href="https://github.com/someonepun" target="_blank">
           <svg
             width="33"
             height="33"
@@ -41,7 +41,7 @@ function App() {
           </svg>
         </a>
         &nbsp;&nbsp;
-        <a href="https://www.linkedin.com/in/nirajpun/">
+        <a href="https://www.linkedin.com/in/nirajpun/" target="_blank">
           <svg
             width="32"
             height="32"
@@ -56,7 +56,7 @@ function App() {
           </svg>
         </a>
         &nbsp;&nbsp;
-        <a href="https://www.instagram.com/niraj.ux/">
+        <a href="https://www.instagram.com/niraj.ux/" target="_blank">
           <svg
             width="33"
             height="33"
@@ -71,7 +71,7 @@ function App() {
           </svg>
         </a>
       </div>
-      <div className="code mt-4 text-xs">Site Under Construction 🔨</div>
+      <div className="code mt-4 text-xs"><code>Site Under Construction 🔨</code></div>
     </div>
   );
 }
