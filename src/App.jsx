@@ -56,7 +56,7 @@ function App() {
           </svg>
         </a>
         &nbsp;&nbsp;
-        <a href="https://www.instagram.com/niraj.ux/" target="_blank">
+        <a href="https://www.instagram.com/niraj.pun.magar/" target="_blank">
           <svg
             width="33"
             height="33"
