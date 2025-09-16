@@ -1,19 +1,59 @@
 import myimage from "./assets/myimage.png";
 import "./App.css";
+import Article from "./components/Article";
+import rna from "./assets/RNA-seq.png";
+import flow from "./assets/Workflow.png";
+
 
 function App() {
   return (
-    <div className="container antialiased">
+    <div className="container">
       <img
         src={myimage}
-        className="w-40 mx-auto mb-5"
-        alt="Niraj Pun Magar - Product Designer"
+        className="w-40 mb-5"
+        alt="Niraj Pun Magar - Bioinformatician & Product Designer"
         height={100}
       />
-      <h2 className="text-xl font-semibold">
-        I am Niraj - Product Designer who Codes
-      </h2>
-      <div className="flex justify-around mx-auto w-fit mt-4">
+
+      <div className="container">
+        <h3>Articles</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Left column */}
+          <div>
+            {/* Add left column content here, e.g. profile, bio, etc. */}
+            <Article
+              title="RNA sequence analysis (Part 1)"
+              image={rna}
+              content={
+                <>
+                  <p>
+                    Learn how to process, analyze, and interpret gene expression data with RNA-seq workflows
+                  </p>
+                  <a href="#" className="">Coming Soon</a>
+                </>
+              }
+            />
+          </div>
+          {/* Right column */}
+          <div>
+            {/* Add right column content here, e.g. articles, projects, etc. */}
+            <Article
+              title="Workflow Automation"
+              image={flow}
+              content={
+                <>
+                  <p>
+                    Workflow automation turns repetitive bioinformatics tasks into seamless, reproducible pipelines
+                  </p>
+                  <a href="#" className="">Locked</a>
+                </>
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-around w-fit mt-4">
         <a href="https://github.com/someonepun" target="_blank">
           <svg
             width="33"
@@ -71,7 +111,6 @@ function App() {
           </svg>
         </a>
       </div>
-      <div className="code mt-4 text-xs"><code>Site Under Construction 🔨</code></div>
     </div>
   );
 }
