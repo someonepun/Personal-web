@@ -3,7 +3,7 @@ import "./App.css";
 import Article from "./components/Article";
 import rna from "./assets/RNA-seq.png";
 import flow from "./assets/Workflow.png";
-
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 function App() {
   return (
@@ -14,7 +14,7 @@ function App() {
         alt="Niraj Pun Magar - Bioinformatician & Product Designer"
         height={100}
       />
-
+ <SpeedInsights />
       <div className="container">
         <h3>Articles</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
