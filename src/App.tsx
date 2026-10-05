@@ -1,13 +1,13 @@
 import { lazy, Suspense, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sun, Moon, ArrowLeft, ArrowUpRight, Volume2, VolumeX } from 'lucide-react'
-import { products, services, type Product, type Service } from './data/content'
-import { articles, type Article } from './content/blogs'
+import { articles, pageLink, pages, pageText, services, site, works, type Article, type Service, type Work } from './content'
 import { BlogCover } from './components/BlogCover'
+import { ScreenGallery } from './components/ScreenGallery'
 import { sfx } from './lib/sfx'
 import './App.css'
 
-// Markdown rendering is only needed on article pages, so load it on demand
+// Markdown rendering is only needed on detail pages, so load it on demand
 const Markdown = lazy(() => import('./components/Markdown').then((m) => ({ default: m.Markdown })))
 
 type Section = 'home' | 'works' | 'services' | 'blogs'
@@ -17,12 +17,6 @@ const menu: { id: Section; label: string }[] = [
   { id: 'works', label: 'Works' },
   { id: 'services', label: 'Services' },
   { id: 'blogs', label: 'Blogs' },
-]
-
-const socials = [
-  { label: 'GitHub', href: 'https://github.com/someonepun' },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/nirajpun/' },
-  { label: 'Instagram', href: 'https://www.instagram.com/niraj.pun.magar/' },
 ]
 
 // Routing: #section or #section/item-id, so back/forward and refresh work
@@ -60,68 +54,11 @@ function useTheme() {
   return { isDark, toggle: () => setIsDark((d) => !d) }
 }
 
-// Renders **bold** inline
-function Inline({ text }: { text: string }) {
-  return (
-    <>
-      {text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
-        part.startsWith('**') ? (
-          <strong key={i} className="font-medium text-foreground">
-            {part.slice(2, -2)}
-          </strong>
-        ) : (
-          part
-        ),
-      )}
-    </>
-  )
-}
-
-function RichText({ content }: { content: string }) {
-  return (
-    <div className="space-y-4 text-base leading-relaxed text-muted-foreground">
-      {content.split('\n\n').map((block, i) => {
-        if (block.startsWith('## ')) {
-          return (
-            <h2 key={i} className="pt-4 text-lg font-medium text-foreground">
-              {block.slice(3)}
-            </h2>
-          )
-        }
-        const lines = block.split('\n').filter((l) => l.trim())
-        const isList = lines.length > 1 && lines.slice(1).every((l) => /^(-|\d+\.)\s/.test(l))
-        if (isList || /^(-|\d+\.)\s/.test(block)) {
-          const intro = /^(-|\d+\.)\s/.test(lines[0]) ? null : lines.shift()
-          const ordered = /^\d+\./.test(lines[0])
-          const List = ordered ? 'ol' : 'ul'
-          return (
-            <div key={i}>
-              {intro && <p className="mb-2">{intro}</p>}
-              <List className={`space-y-1.5 pl-4 ${ordered ? 'list-decimal' : 'list-disc'} marker:text-muted-foreground`}>
-                {lines.map((l, j) => (
-                  <li key={j}>
-                    <Inline text={l.replace(/^(-|\d+\.)\s*/, '')} />
-                  </li>
-                ))}
-              </List>
-            </div>
-          )
-        }
-        return (
-          <p key={i}>
-            <Inline text={block} />
-          </p>
-        )
-      })}
-    </div>
-  )
-}
-
 // Shared building blocks
-function PageHeader({ eyebrow, title, intro }: { eyebrow: string; title: string; intro?: ReactNode }) {
+function PageHeader({ eyebrow, title, intro }: { eyebrow?: string; title: string; intro?: ReactNode }) {
   return (
     <header className="mb-10">
-      <p className="label mb-3">{eyebrow}</p>
+      {eyebrow && <p className="label mb-3">{eyebrow}</p>}
       <h1 className="text-2xl font-medium tracking-tight">{title}</h1>
       {intro && <p className="mt-3 max-w-prose text-base leading-relaxed text-muted-foreground">{intro}</p>}
     </header>
@@ -193,7 +130,7 @@ function CheckList({ title, items }: { title: string; items: string[] }) {
 function PrimaryButton({ children, href }: { children: ReactNode; href?: string }) {
   return (
     <a
-      href={href ?? socials[1].href}
+      href={href ?? site.contact}
       target="_blank"
       rel="noreferrer"
       className="mt-10 inline-flex items-center gap-1.5 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background hover:opacity-80"
@@ -201,6 +138,16 @@ function PrimaryButton({ children, href }: { children: ReactNode; href?: string 
       {children}
       <ArrowUpRight className="h-3.5 w-3.5" />
     </a>
+  )
+}
+
+// Markdown body of a page or item; renders nothing when the file has no body
+function Body({ content, dir }: { content: string; dir: string }) {
+  if (!content) return null
+  return (
+    <Suspense fallback={<div className="h-48" />}>
+      <Markdown content={content} dir={dir} />
+    </Suspense>
   )
 }
 
@@ -227,55 +174,82 @@ function BlogGrid({ items }: { items: Article[] }) {
 
 // Sections
 function Home() {
+  const page = pages.home
   return (
     <div>
-      <PageHeader
-        eyebrow="Bioinformatician & Product Designer"
-        title="Niraj Pun Magar"
-        intro="Designer and engineer working where biology, design, and code meet — building tools that make complex biological data easier to explore."
-      />
+      <PageHeader eyebrow={page.eyebrow} title={page.title} intro={page.intro} />
+      {page.content && (
+        <div className="-mt-4 mb-12">
+          <Body content={page.content} dir="pages" />
+        </div>
+      )}
 
-      <section className="mb-12">
-        <h2 className="label mb-4 border-b border-border pb-3">Latest writing</h2>
-        <BlogGrid items={articles.slice(0, 2)} />
-        <button onClick={() => go('blogs')} className="mt-6 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
-          All blogs →
-        </button>
-      </section>
+      {articles.length > 0 && (
+        <section className="mb-12">
+          <h2 className="label mb-4 border-b border-border pb-3">{pageText(page, 'latestWriting', 'Latest writing')}</h2>
+          <BlogGrid items={articles.slice(0, 2)} />
+          <button onClick={() => go('blogs')} className="mt-6 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+            All blogs →
+          </button>
+        </section>
+      )}
 
-      <section>
-        <h2 className="label mb-1">Selected works</h2>
-        <ul>
-          {products.map((p, i) => (
-            <Row key={p.id} index={i} title={p.name} meta={p.status} description={p.description} onClick={() => go('works', p.id)} />
-          ))}
-        </ul>
-      </section>
+      {works.length > 0 && (
+        <section>
+          <h2 className="label mb-1">{pageText(page, 'selectedWorks', 'Selected works')}</h2>
+          <ul>
+            {works.map((w, i) => (
+              <Row key={w.id} index={i} title={w.title} meta={w.status} description={w.summary} onClick={() => go('works', w.id)} />
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   )
 }
 
-function Works({ selected }: { selected?: Product }) {
+function WorkGrid({ items }: { items: Work[] }) {
+  return (
+    <ul className="grid gap-x-6 gap-y-10 sm:grid-cols-2">
+      {items.map((w) => (
+        <li key={w.id}>
+          <button onClick={() => go('works', w.id)} className="group block w-full text-left">
+            <BlogCover id={w.id} image={w.cover ?? w.screens[0]?.src} className="aspect-[16/10]" />
+            <span className="label mt-4 block">{[w.status, w.price].filter(Boolean).join(' · ')}</span>
+            <span className="mt-1.5 block text-md font-medium group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">
+              {w.title}
+            </span>
+            <span className="mt-1 line-clamp-2 block text-sm leading-relaxed text-muted-foreground">{w.summary}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function Works({ selected }: { selected?: Work }) {
   if (selected) {
     return (
       <article>
         <BackLink section="works" label="Works" />
-        <PageHeader eyebrow={`${selected.status} · ${selected.price}`} title={selected.name} />
-        <RichText content={selected.fullDescription} />
-        <CheckList title="Features" items={selected.features} />
-        {selected.status === 'Available' && <PrimaryButton>Get access</PrimaryButton>}
-        {selected.status === 'Beta' && <PrimaryButton>Join beta waitlist</PrimaryButton>}
+        <PageHeader eyebrow={[selected.status, selected.price].filter(Boolean).join(' · ')} title={selected.title} intro={selected.summary} />
+        {selected.screens.length > 0 ? (
+          <ScreenGallery screens={selected.screens} title={selected.title} />
+        ) : (
+          selected.cover && <BlogCover id={selected.id} image={selected.cover} className="mb-10 aspect-[16/9]" />
+        )}
+        <Body content={selected.content} dir="works" />
+        {selected.features.length > 0 && <CheckList title="Features" items={selected.features} />}
+        {selected.cta && <PrimaryButton href={selected.cta.url}>{selected.cta.label}</PrimaryButton>}
       </article>
     )
   }
+  const page = pages.works
   return (
     <div>
-      <PageHeader eyebrow="Works" title="Tools & products" intro="Software for visualizing and analysing biological data." />
-      <ul>
-        {products.map((p, i) => (
-          <Row key={p.id} index={i} title={p.name} meta={p.status} description={p.description} onClick={() => go('works', p.id)} />
-        ))}
-      </ul>
+      <PageHeader eyebrow={page.eyebrow} title={page.title} intro={page.intro} />
+      <Body content={page.content} dir="pages" />
+      <WorkGrid items={works} />
     </div>
   )
 }
@@ -285,26 +259,25 @@ function Services({ selected }: { selected?: Service }) {
     return (
       <article>
         <BackLink section="services" label="Services" />
-        <PageHeader eyebrow="Service" title={selected.title} />
-        <RichText content={selected.fullDescription} />
-        <CheckList title="What you get" items={selected.deliverables} />
-        <PrimaryButton>Discuss your project</PrimaryButton>
+        <PageHeader eyebrow="Service" title={selected.title} intro={selected.summary} />
+        <Body content={selected.content} dir="services" />
+        {selected.deliverables.length > 0 && <CheckList title="What you get" items={selected.deliverables} />}
+        {selected.cta && <PrimaryButton href={selected.cta.url}>{selected.cta.label}</PrimaryButton>}
       </article>
     )
   }
+  const page = pages.services
+  const cta = pageLink(page, 'cta')
   return (
     <div>
-      <PageHeader
-        eyebrow="Services"
-        title="Working together"
-        intro="Available for freelance projects and collaborations that bridge biology, design, and technology."
-      />
+      <PageHeader eyebrow={page.eyebrow} title={page.title} intro={page.intro} />
+      <Body content={page.content} dir="pages" />
       <ul>
         {services.map((s, i) => (
-          <Row key={s.id} index={i} title={s.title} description={s.description} onClick={() => go('services', s.id)} />
+          <Row key={s.id} index={i} title={s.title} description={s.summary} onClick={() => go('services', s.id)} />
         ))}
       </ul>
-      <PrimaryButton>Get in touch</PrimaryButton>
+      {cta && <PrimaryButton href={cta.url}>{cta.label}</PrimaryButton>}
     </div>
   )
 }
@@ -316,16 +289,16 @@ function Blogs({ selected }: { selected?: Article }) {
         <BackLink section="blogs" label="Blogs" />
         <BlogCover id={selected.id} image={selected.cover} className="mb-10 aspect-[16/9]" />
         <PageHeader eyebrow={`${selected.date} · ${selected.readTime}`} title={selected.title} />
-        <p className="label -mt-6 mb-8">{selected.tags.join(' / ')}</p>
-        <Suspense fallback={<div className="h-96" />}>
-          <Markdown content={selected.content} />
-        </Suspense>
+        {selected.tags.length > 0 && <p className="label -mt-6 mb-8">{selected.tags.join(' / ')}</p>}
+        <Body content={selected.content} dir="blogs" />
       </article>
     )
   }
+  const page = pages.blogs
   return (
     <div>
-      <PageHeader eyebrow="Blogs" title="Notes & essays" intro="Writing on bioinformatics, machine learning, and designing scientific software." />
+      <PageHeader eyebrow={page.eyebrow} title={page.title} intro={page.intro} />
+      <Body content={page.content} dir="pages" />
       <BlogGrid items={articles} />
     </div>
   )
@@ -385,7 +358,7 @@ function App() {
 
   const content = {
     home: <Home />,
-    works: <Works selected={products.find((p) => p.id === itemId)} />,
+    works: <Works selected={works.find((w) => w.id === itemId)} />,
     services: <Services selected={services.find((s) => s.id === itemId)} />,
     blogs: <Blogs selected={articles.find((a) => a.id === itemId)} />,
   }[section]
@@ -396,8 +369,8 @@ function App() {
       <aside className="flex shrink-0 flex-col gap-6 border-b border-border px-5 py-5 md:h-full md:w-56 md:border-b-0 md:border-r md:px-8 md:py-10">
         <div className="flex items-center justify-between">
           <button onClick={() => go('home')} className="text-left">
-            <span className="block text-sm font-medium">Niraj Pun Magar</span>
-            <span className="label mt-0.5 block">Biology × Design × Code</span>
+            <span className="block text-sm font-medium">{site.name}</span>
+            {site.tagline && <span className="label mt-0.5 block">{site.tagline}</span>}
           </button>
           <div className="md:hidden">
             <Controls isDark={isDark} toggle={toggle} />
@@ -434,9 +407,9 @@ function App() {
 
         <div className="mt-auto hidden flex-col gap-5 md:flex">
           <ul className="space-y-1">
-            {socials.map((s) => (
+            {site.socials.map((s) => (
               <li key={s.label}>
-                <a href={s.href} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground hover:text-foreground">
+                <a href={s.url} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground hover:text-foreground">
                   {s.label} ↗
                 </a>
               </li>
@@ -463,8 +436,8 @@ function App() {
           </AnimatePresence>
 
           <footer className="mt-16 flex gap-4 border-t border-border pt-6 md:hidden">
-            {socials.map((s) => (
-              <a key={s.label} href={s.href} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground hover:text-foreground">
+            {site.socials.map((s) => (
+              <a key={s.label} href={s.url} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground hover:text-foreground">
                 {s.label} ↗
               </a>
             ))}
