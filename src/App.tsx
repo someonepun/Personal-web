@@ -2,6 +2,7 @@ import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sun, Moon, ArrowLeft, ArrowUpRight, Volume2, VolumeX } from 'lucide-react'
 import { articles, products, services, type Article, type Product, type Service } from './data/content'
+import { BlogCover } from './components/BlogCover'
 import { sfx } from './lib/sfx'
 import './App.css'
 
@@ -199,6 +200,27 @@ function PrimaryButton({ children, href }: { children: ReactNode; href?: string 
   )
 }
 
+function BlogGrid({ items }: { items: Article[] }) {
+  return (
+    <ul className="grid gap-x-6 gap-y-10 sm:grid-cols-2">
+      {items.map((a) => (
+        <li key={a.id}>
+          <button onClick={() => go('blogs', a.id)} className="group block w-full text-left">
+            <BlogCover id={a.id} className="aspect-[16/10]" />
+            <span className="label mt-4 block">
+              {a.date} · {a.readTime}
+            </span>
+            <span className="mt-1.5 block text-md font-medium group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">
+              {a.title}
+            </span>
+            <span className="mt-1 line-clamp-2 block text-sm leading-relaxed text-muted-foreground">{a.excerpt}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 // Sections
 function Home() {
   return (
@@ -210,13 +232,9 @@ function Home() {
       />
 
       <section className="mb-12">
-        <h2 className="label mb-1">Latest writing</h2>
-        <ul>
-          {articles.slice(0, 2).map((a, i) => (
-            <Row key={a.id} index={i} title={a.title} meta={a.date} description={a.excerpt} onClick={() => go('blogs', a.id)} />
-          ))}
-        </ul>
-        <button onClick={() => go('blogs')} className="mt-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+        <h2 className="label mb-4 border-b border-border pb-3">Latest writing</h2>
+        <BlogGrid items={articles.slice(0, 2)} />
+        <button onClick={() => go('blogs')} className="mt-6 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
           All blogs →
         </button>
       </section>
@@ -292,6 +310,7 @@ function Blogs({ selected }: { selected?: Article }) {
     return (
       <article>
         <BackLink section="blogs" label="Blogs" />
+        <BlogCover id={selected.id} className="mb-10 aspect-[16/9]" />
         <PageHeader eyebrow={`${selected.date} · ${selected.readTime}`} title={selected.title} />
         <p className="label -mt-6 mb-8">{selected.tags.join(' / ')}</p>
         <RichText content={selected.content} />
@@ -301,11 +320,7 @@ function Blogs({ selected }: { selected?: Article }) {
   return (
     <div>
       <PageHeader eyebrow="Blogs" title="Notes & essays" intro="Writing on bioinformatics, machine learning, and designing scientific software." />
-      <ul>
-        {articles.map((a, i) => (
-          <Row key={a.id} index={i} title={a.title} meta={a.date} description={a.excerpt} onClick={() => go('blogs', a.id)} />
-        ))}
-      </ul>
+      <BlogGrid items={articles} />
     </div>
   )
 }
