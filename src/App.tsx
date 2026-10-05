@@ -1,7 +1,8 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sun, Moon, ArrowLeft, ArrowUpRight } from 'lucide-react'
+import { Sun, Moon, ArrowLeft, ArrowUpRight, Volume2, VolumeX } from 'lucide-react'
 import { articles, products, services, type Article, type Product, type Service } from './data/content'
+import { sfx } from './lib/sfx'
 import './App.css'
 
 type Section = 'home' | 'works' | 'services' | 'blogs'
@@ -312,13 +313,42 @@ function Blogs({ selected }: { selected?: Article }) {
 function ThemeToggle({ isDark, toggle }: { isDark: boolean; toggle: () => void }) {
   return (
     <button
-      onClick={toggle}
+      onClick={() => {
+        sfx.toggle(isDark)
+        toggle()
+      }}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:border-foreground hover:text-foreground"
     >
       {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
       {isDark ? 'Light' : 'Dark'}
     </button>
+  )
+}
+
+function SoundToggle() {
+  const on = useSyncExternalStore(sfx.subscribe, () => sfx.enabled)
+  return (
+    <button
+      onClick={() => {
+        sfx.setEnabled(!on)
+        if (!on) sfx.toggle(true)
+      }}
+      aria-label={on ? 'Mute interface sounds' : 'Enable interface sounds'}
+      aria-pressed={on}
+      className="inline-flex h-[1.875rem] w-[1.875rem] items-center justify-center rounded-full border border-border text-muted-foreground hover:border-foreground hover:text-foreground"
+    >
+      {on ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+    </button>
+  )
+}
+
+function Controls({ isDark, toggle }: { isDark: boolean; toggle: () => void }) {
+  return (
+    <div className="flex items-center gap-2">
+      <ThemeToggle isDark={isDark} toggle={toggle} />
+      <SoundToggle />
+    </div>
   )
 }
 
@@ -349,7 +379,7 @@ function App() {
             <span className="label mt-0.5 block">Biology × Design × Code</span>
           </button>
           <div className="md:hidden">
-            <ThemeToggle isDark={isDark} toggle={toggle} />
+            <Controls isDark={isDark} toggle={toggle} />
           </div>
         </div>
 
@@ -360,12 +390,20 @@ function App() {
               return (
                 <li key={item.id}>
                   <button
-                    onClick={() => go(item.id)}
+                    onPointerEnter={(e) => e.pointerType === 'mouse' && sfx.hover(i)}
+                    onClick={() => {
+                      sfx.click(i)
+                      go(item.id)
+                    }}
                     aria-current={active ? 'page' : undefined}
                     className={`group flex items-center gap-3 py-1 text-sm ${active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                   >
                     <span className="label hidden md:inline">{String(i + 1).padStart(2, '0')}</span>
-                    <span className={active ? 'underline decoration-1 underline-offset-[6px]' : ''}>{item.label}</span>
+                    <span
+                      className={`transition-transform duration-300 ease-out md:group-hover:translate-x-0.5 ${active ? 'underline decoration-1 underline-offset-[6px]' : ''}`}
+                    >
+                      {item.label}
+                    </span>
                   </button>
                 </li>
               )
@@ -383,7 +421,7 @@ function App() {
               </li>
             ))}
           </ul>
-          <ThemeToggle isDark={isDark} toggle={toggle} />
+          <Controls isDark={isDark} toggle={toggle} />
           <p className="label">© {new Date().getFullYear()}</p>
         </div>
       </aside>
