@@ -17,6 +17,7 @@ Traditional bioinformatics tools prioritize functionality over usability. Comman
 2. **Visual Feedback**: Make data transformations visible and understandable
 3. **Contextual Help**: Provide guidance without cluttering the interface
 4. **Accessibility**: Ensure tools work for researchers with varying technical skills
+5. **Responsiveness**: UI must be fully accessible in any size devices
 
 ## Case Study: SeqFlow Redesign
 
