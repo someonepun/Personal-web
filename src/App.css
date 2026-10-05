@@ -1,4 +1,4 @@
-/* Custom scrollbar for content panels */
+/* Minimal scrollbar for the content column */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -16,161 +16,48 @@
   background: hsl(var(--muted-foreground));
 }
 
-/* Smooth transitions for theme switching */
-* {
-  transition-property: background-color, border-color, color;
-  transition-duration: 300ms;
-  transition-timing-function: ease-in-out;
-}
-
-/* Selection styling */
-::selection {
-  background-color: hsl(var(--primary) / 0.2);
-  color: hsl(var(--primary));
-}
-
-/* Focus styling */
-:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
-}
-
-/* Prevent text selection on interactive elements */
+/* Smooth theme switching */
+body,
+aside,
+main,
+a,
 button,
-a {
-  user-select: none;
+li,
+ul {
+  transition-property: background-color, border-color, color, opacity, transform;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
 }
 
-/* Smooth scrolling for panels */
-.overflow-y-auto {
-  scroll-behavior: smooth;
+/* Inverted selection in both themes */
+::selection {
+  background-color: hsl(var(--foreground));
+  color: hsl(var(--background));
 }
 
-/* Glassmorphism effect enhancement */
-.backdrop-blur-xl {
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+:focus-visible {
+  outline: 1px solid hsl(var(--ring));
+  outline-offset: 3px;
 }
 
-.backdrop-blur-sm {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-/* Ensure full viewport coverage */
-html, body, #root {
+/* Full-viewport app shell; the content column scrolls on its own */
+html,
+body,
+#root {
   height: 100%;
   width: 100%;
   overflow: hidden;
 }
 
-/* Typography refinements */
-h1, h2, h3, h4, h5, h6 {
-  letter-spacing: -0.02em;
+h1,
+h2,
+h3 {
+  letter-spacing: -0.015em;
 }
 
-/* Button hover lift effect */
-button:hover {
-  transform: translateY(-1px);
-}
-
-button:active {
-  transform: translateY(0);
-}
-
-/* Prose styling for article content */
-.prose {
-  color: hsl(var(--foreground));
-}
-
-.prose h2 {
-  font-size: 1.25rem;
-  font-weight: 500;
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-  color: hsl(var(--foreground));
-}
-
-.prose p {
-  margin-bottom: 1rem;
-  line-height: 1.75;
-}
-
-.prose ul {
-  list-style-type: disc;
-  padding-left: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.prose li {
-  margin-bottom: 0.5rem;
-}
-
-.prose strong {
-  font-weight: 600;
-}
-
-/* Dark mode prose */
-.dark .prose {
-  color: hsl(var(--foreground));
-}
-
-.dark .prose h2 {
-  color: hsl(var(--foreground));
-}
-
-/* Panel handle animation */
-@keyframes pulse-handle {
-  0%, 100% {
-    opacity: 0.5;
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
   }
-  50% {
-    opacity: 1;
-  }
-}
-
-/* Card hover effects */
-.group:hover .group-hover\:opacity-100 {
-  opacity: 1;
-}
-
-/* Ensure proper z-index stacking */
-.z-0 { z-index: 0; }
-.z-10 { z-index: 10; }
-.z-20 { z-index: 20; }
-.z-40 { z-index: 40; }
-.z-50 { z-index: 50; }
-
-/* Hide scrollbar but keep functionality */
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-/* Gradient text effect */
-.gradient-text {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Animation for content items */
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.5s ease-out forwards;
 }
