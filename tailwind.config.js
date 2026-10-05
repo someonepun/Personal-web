@@ -4,6 +4,21 @@ module.exports = {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      // Compact modular type scale: 14px base, 1.125 (major second) ratio
+      fontSize: {
+        "2xs": ["0.625rem", { lineHeight: "1rem" }],        // 10px
+        xs: ["0.6875rem", { lineHeight: "1rem" }],          // 11px
+        sm: ["0.78125rem", { lineHeight: "1.25rem" }],      // 12.5px
+        base: ["0.875rem", { lineHeight: "1.5rem" }],       // 14px
+        md: ["0.984375rem", { lineHeight: "1.5rem" }],      // 15.75px
+        lg: ["1.107rem", { lineHeight: "1.625rem" }],       // 17.7px
+        xl: ["1.246rem", { lineHeight: "1.75rem" }],        // 19.9px
+        "2xl": ["clamp(1.25rem, 1.1rem + 0.6vw, 1.4rem)", { lineHeight: "1.2" }], // 20–22.4px
+        "3xl": ["clamp(1.4rem, 1.2rem + 0.8vw, 1.575rem)", { lineHeight: "1.15" }], // 22.4–25.2px
+      },
+      fontFamily: {
+        mono: ['"JetBrains Mono"', "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
