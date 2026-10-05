@@ -1,8 +1,8 @@
 import myimage from "./assets/myimage.png";
 import "./App.css";
 import Article from "./components/Article";
-import rna from "./assets/RNA-seq.png";
-import flow from "./assets/Workflow.png";
+import rna from "./content/blogs/images/rna-seq.png";
+import flow from "./content/blogs/images/workflow-automation.png";
 
 function App() {
   return (

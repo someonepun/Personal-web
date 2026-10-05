@@ -126,9 +126,22 @@ const covers: Record<string, () => ReactNode> = {
   'future-computational-biology': Halftone,
 }
 
-export function BlogCover({ id, className = '' }: { id: string; className?: string }) {
+export function BlogCover({ id, image, className = '' }: { id: string; image?: string; className?: string }) {
   const glow = useId()
   const Art = covers[id]
+  if (image) {
+    return (
+      <div className={`overflow-hidden rounded-xl bg-muted ${className}`}>
+        <img
+          src={image}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+        />
+      </div>
+    )
+  }
   return (
     <div className={`overflow-hidden rounded-xl bg-muted text-foreground ${className}`}>
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" className="block h-full w-full" role="presentation" aria-hidden="true">

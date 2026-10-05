@@ -1,10 +1,14 @@
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sun, Moon, ArrowLeft, ArrowUpRight, Volume2, VolumeX } from 'lucide-react'
-import { articles, products, services, type Article, type Product, type Service } from './data/content'
+import { products, services, type Product, type Service } from './data/content'
+import { articles, type Article } from './content/blogs'
 import { BlogCover } from './components/BlogCover'
 import { sfx } from './lib/sfx'
 import './App.css'
+
+// Markdown rendering is only needed on article pages, so load it on demand
+const Markdown = lazy(() => import('./components/Markdown').then((m) => ({ default: m.Markdown })))
 
 type Section = 'home' | 'works' | 'services' | 'blogs'
 
@@ -206,7 +210,7 @@ function BlogGrid({ items }: { items: Article[] }) {
       {items.map((a) => (
         <li key={a.id}>
           <button onClick={() => go('blogs', a.id)} className="group block w-full text-left">
-            <BlogCover id={a.id} className="aspect-[16/10]" />
+            <BlogCover id={a.id} image={a.cover} className="aspect-[16/10]" />
             <span className="label mt-4 block">
               {a.date} · {a.readTime}
             </span>
@@ -310,10 +314,12 @@ function Blogs({ selected }: { selected?: Article }) {
     return (
       <article>
         <BackLink section="blogs" label="Blogs" />
-        <BlogCover id={selected.id} className="mb-10 aspect-[16/9]" />
+        <BlogCover id={selected.id} image={selected.cover} className="mb-10 aspect-[16/9]" />
         <PageHeader eyebrow={`${selected.date} · ${selected.readTime}`} title={selected.title} />
         <p className="label -mt-6 mb-8">{selected.tags.join(' / ')}</p>
-        <RichText content={selected.content} />
+        <Suspense fallback={<div className="h-96" />}>
+          <Markdown content={selected.content} />
+        </Suspense>
       </article>
     )
   }
