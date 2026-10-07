@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react'
 import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { resolveImage } from '../content'
@@ -6,16 +7,43 @@ import { resolveImage } from '../content'
 function componentsFor(dir: string): Components {
   return {
     h1: ({ children }) => <h2 className="pt-6 text-xl font-medium text-foreground">{children}</h2>,
-    h2: ({ children }) => <h2 className="pt-6 text-lg font-medium text-foreground">{children}</h2>,
+    h2: ({ id, children }) =>
+      // remark-gfm's hidden "Footnotes" heading becomes a visible References label
+      id?.endsWith('footnote-label') ? (
+        <h2 id={id} className="label mb-4">
+          References
+        </h2>
+      ) : (
+        <h2 className="pt-6 text-lg font-medium text-foreground">{children}</h2>
+      ),
     h3: ({ children }) => <h3 className="pt-4 text-md font-medium text-foreground">{children}</h3>,
     h4: ({ children }) => <h4 className="pt-2 text-base font-medium text-foreground">{children}</h4>,
     p: ({ children }) => <p>{children}</p>,
     strong: ({ children }) => <strong className="font-medium text-foreground">{children}</strong>,
-    a: ({ href, children }) => {
+    a: ({ href, id, children, ...rest }) => {
       const external = href?.startsWith('http')
+      // In-page links (footnotes and their back-links) scroll instead of changing the
+      // URL hash, which the site uses for page routing
+      const onClick = href?.startsWith('#')
+        ? (e: MouseEvent) => {
+            e.preventDefault()
+            document.getElementById(href.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+        : undefined
+      if ('data-footnote-ref' in rest) {
+        return (
+          <a data-footnote-ref id={id} href={href} onClick={onClick} className="ml-0.5 font-mono text-[0.7em] text-foreground no-underline hover:underline">
+            [{children}]
+          </a>
+        )
+      }
       return (
         <a
+          id={id}
           href={href}
+          onClick={onClick}
+          data-footnote-backref={'data-footnote-backref' in rest || undefined}
+          aria-label={'data-footnote-backref' in rest ? 'Back to text' : undefined}
           target={external ? '_blank' : undefined}
           rel={external ? 'noreferrer' : undefined}
           className="text-foreground underline decoration-border decoration-1 underline-offset-4 hover:decoration-foreground"
@@ -28,6 +56,18 @@ function componentsFor(dir: string): Components {
     ol: ({ children }) => <ol className="list-decimal space-y-1.5 pl-5 marker:text-muted-foreground">{children}</ol>,
     blockquote: ({ children }) => <blockquote className="border-l border-foreground pl-4 text-foreground">{children}</blockquote>,
     hr: () => <hr className="my-8 border-border" />,
+    section: ({ children, ...rest }) =>
+      'data-footnotes' in rest ? (
+        <section
+          data-footnotes
+          className="!mt-16 border-t border-border pt-6 text-xs leading-relaxed [&_li]:pl-1 [&_ol]:space-y-2.5 [&_p]:inline"
+        >
+          {children}
+        </section>
+      ) : (
+        <section>{children}</section>
+      ),
+    li: ({ id, children }) => <li id={id}>{children}</li>,
     img: ({ src, alt, title }) => (
       <figure className="my-8">
         <img
