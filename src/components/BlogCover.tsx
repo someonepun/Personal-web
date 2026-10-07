@@ -100,6 +100,54 @@ function Halftone() {
   )
 }
 
+// Micro- and Nanoplastics: one solid piece fragmenting into ever smaller particles
+function Fragments() {
+  // Each step: smaller, more numerous, more scattered, fainter
+  const steps = [
+    { x: 92, n: 1, size: 44, spread: 0, opacity: 1 },
+    { x: 152, n: 3, size: 16, spread: 32, opacity: 0.9 },
+    { x: 196, n: 6, size: 8, spread: 34, opacity: 0.75 },
+    { x: 232, n: 10, size: 4, spread: 44, opacity: 0.6 },
+    { x: 262, n: 16, size: 2, spread: 54, opacity: 0.45 },
+    { x: 286, n: 22, size: 1.1, spread: 62, opacity: 0.35 },
+  ]
+  // Deterministic scatter so the cover looks the same on every render
+  const jitter = (i: number, k: number) => Math.sin(i * 12.9898 + k * 78.233) * 0.5
+  return (
+    <>
+      {steps.map((st, si) =>
+        Array.from({ length: st.n }, (_, i) => {
+          const y = 100 + (st.n === 1 ? 0 : ((i + 0.5) / st.n - 0.5) * st.spread * 2) + jitter(i, si) * 8
+          const x = st.x + jitter(i + 7, si) * st.spread * 0.4
+          const r = (jitter(i, si + 3) * 70 + si * 9) % 90
+          return st.size > 3 ? (
+            <rect
+              key={`${si}-${i}`}
+              x={x - st.size / 2}
+              y={y - st.size / 2}
+              width={st.size}
+              height={st.size}
+              rx={st.size * 0.18}
+              fill="currentColor"
+              opacity={st.opacity}
+              transform={`rotate(${si === 0 ? 0 : r} ${x} ${y})`}
+            />
+          ) : (
+            <circle key={`${si}-${i}`} cx={x} cy={y} r={st.size} fill="currentColor" opacity={st.opacity} />
+          )
+        }),
+      )}
+      <line x1="40" y1="160" x2="292" y2="160" stroke="currentColor" strokeWidth="1" opacity="0.25" />
+      <text x="40" y="176" fill="currentColor" opacity="0.45" fontSize="7" fontFamily="ui-monospace, monospace" letterSpacing="0.6">
+        5 mm
+      </text>
+      <text x="292" y="176" fill="currentColor" opacity="0.45" fontSize="7" fontFamily="ui-monospace, monospace" letterSpacing="0.6" textAnchor="end">
+        &lt; 1 µm
+      </text>
+    </>
+  )
+}
+
 // Fallback for new posts: concentric arcs whose count and accent follow the id
 function Arcs({ seed }: { seed: string }) {
   const hash = [...seed].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7)
@@ -124,6 +172,7 @@ const covers: Record<string, () => ReactNode> = {
   'ml-models-protein-folding': Fold,
   'engineering-scalable-bio-pipelines': Pipeline,
   'future-computational-biology': Halftone,
+  'micro-and-nanoplastics': Fragments,
 }
 
 export function BlogCover({ id, image, className = '' }: { id: string; image?: string; className?: string }) {
