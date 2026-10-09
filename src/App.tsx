@@ -1,10 +1,9 @@
-import { lazy, Suspense, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sun, Moon, ArrowLeft, ArrowUpRight, Volume2, VolumeX } from 'lucide-react'
+import { Sun, Moon, ArrowLeft, ArrowUpRight } from 'lucide-react'
 import { articles, pageLink, pages, pageText, services, site, works, type Article, type Service, type Work } from './content'
 import { BlogCover } from './components/BlogCover'
 import { ScreenGallery } from './components/ScreenGallery'
-import { sfx } from './lib/sfx'
 import './App.css'
 
 // Markdown rendering is only needed on detail pages, so load it on demand
@@ -307,42 +306,13 @@ function Blogs({ selected }: { selected?: Article }) {
 function ThemeToggle({ isDark, toggle }: { isDark: boolean; toggle: () => void }) {
   return (
     <button
-      onClick={() => {
-        sfx.toggle(isDark)
-        toggle()
-      }}
+      onClick={toggle}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-      className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:border-foreground hover:text-foreground"
+      className="inline-flex items-center gap-2 self-start rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:border-foreground hover:text-foreground"
     >
       {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
       {isDark ? 'Light' : 'Dark'}
     </button>
-  )
-}
-
-function SoundToggle() {
-  const on = useSyncExternalStore(sfx.subscribe, () => sfx.enabled)
-  return (
-    <button
-      onClick={() => {
-        sfx.setEnabled(!on)
-        if (!on) sfx.toggle(true)
-      }}
-      aria-label={on ? 'Mute interface sounds' : 'Enable interface sounds'}
-      aria-pressed={on}
-      className="inline-flex h-[1.875rem] w-[1.875rem] items-center justify-center rounded-full border border-border text-muted-foreground hover:border-foreground hover:text-foreground"
-    >
-      {on ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
-    </button>
-  )
-}
-
-function Controls({ isDark, toggle }: { isDark: boolean; toggle: () => void }) {
-  return (
-    <div className="flex items-center gap-2">
-      <ThemeToggle isDark={isDark} toggle={toggle} />
-      <SoundToggle />
-    </div>
   )
 }
 
@@ -373,7 +343,7 @@ function App() {
             {site.tagline && <span className="label mt-0.5 block">{site.tagline}</span>}
           </button>
           <div className="md:hidden">
-            <Controls isDark={isDark} toggle={toggle} />
+            <ThemeToggle isDark={isDark} toggle={toggle} />
           </div>
         </div>
 
@@ -384,11 +354,7 @@ function App() {
               return (
                 <li key={item.id}>
                   <button
-                    onPointerEnter={(e) => e.pointerType === 'mouse' && sfx.hover(i)}
-                    onClick={() => {
-                      sfx.click(i)
-                      go(item.id)
-                    }}
+                    onClick={() => go(item.id)}
                     aria-current={active ? 'page' : undefined}
                     className={`group flex items-center gap-3 py-1 text-sm ${active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                   >
@@ -415,7 +381,7 @@ function App() {
               </li>
             ))}
           </ul>
-          <Controls isDark={isDark} toggle={toggle} />
+          <ThemeToggle isDark={isDark} toggle={toggle} />
           <p className="label">© {new Date().getFullYear()}</p>
         </div>
       </aside>
