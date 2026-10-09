@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState, type ReactNode, type Ref } fr
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight, X } from 'lucide-react'
 import type { Screen } from '../content'
-import { sfx } from '../lib/sfx'
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
@@ -36,10 +35,7 @@ export function ScreenGallery({ screens, title }: { screens: Screen[]; title: st
         {screens.map((s, i) => (
           <li key={s.src + i} className="shrink-0 snap-start">
             <button
-              onClick={() => {
-                sfx.click(i)
-                setOpen(i)
-              }}
+              onClick={() => setOpen(i)}
               className="group block text-left"
               aria-label={`Open screen ${i + 1}${s.caption ? `: ${s.caption}` : ''}`}
             >
@@ -106,9 +102,7 @@ function Viewer({
   const step = useCallback(
     (dir: 1 | -1) => {
       if (index === null) return
-      const next = (index + dir + count) % count
-      sfx.hover(next)
-      onChange(next)
+      onChange((index + dir + count) % count)
     },
     [index, count, onChange],
   )
